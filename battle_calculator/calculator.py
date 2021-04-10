@@ -89,19 +89,19 @@ class calculator():
                     misses += attacker_hits_probability * defender_hits_probability
                     continue
 
-                # need new variable since 
-                attacker_ships_remaining = attacker_initial_units - defender_hits
-                defender_ships_remaining = defender_initial_units - attacker_hits
+                # need new variable since *_initial_units is being used in loop 
+                attacker_units_remaining = attacker_initial_units - defender_hits
+                defender_units_remaining = defender_initial_units - attacker_hits
 
                 # NEW method
-                if (attacker_ships_remaining, defender_ships_remaining) in self.precomputed_rounds:
-                    prior = self.precomputed_rounds[(attacker_ships_remaining, defender_ships_remaining)]
+                if (attacker_units_remaining, defender_units_remaining) in self.precomputed_rounds:
+                    prior = self.precomputed_rounds[(attacker_units_remaining, defender_units_remaining)]
                 else:
-                    prior = self._iterate_round(attacker_ships_remaining, defender_ships_remaining)
-                    self.precomputed_rounds[(attacker_ships_remaining, defender_ships_remaining)] = prior
+                    prior = self._iterate_round(attacker_units_remaining, defender_units_remaining)
+                    self.precomputed_rounds[(attacker_units_remaining, defender_units_remaining)] = prior
 
                 # OLD method (for comparison only, its a lot slower but useful for testing)
-                #prior = iterate_round(attacker_ships_remaining, defender_ships_remaining)
+                #prior = iterate_round(attacker_units_remaining, defender_units_remaining)
 
                 expected_result += prior * attacker_hits_probability * defender_hits_probability
 
