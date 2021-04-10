@@ -1,6 +1,8 @@
+import numpy as np
+
 class calculator():
     
-    def self.__init__():
+    def __init__(self):
         self.attacker = []
         self.defender = []
         self.attacker_hit_distribution = {}
@@ -8,15 +10,15 @@ class calculator():
         self.precomputed_rounds = {}
         
 
-    def self.add_attacker(self):
+    def add_attacker(self):
         # stores attacker fleet information
         # fleet struct created by input, then passed into modifiers to get 2d list for computation
         self.attacker = [[5], [7], [7], [11]]
         
-    def self.add_defender(self):
+    def add_defender(self):
         self.defender = [[5], [5], [11], [11]]
     
-    def self.calculate(self):
+    def calculate(self):
         # checks that we have fleets
         # applies modifiers
         # starts iterate_round
@@ -25,12 +27,12 @@ class calculator():
         self.attacker_hit_distribution = self._hit_distribution(self.attacker)
         self.defender_hit_distribution = self._hit_distribution(self.defender)
 
-        result = self.iterate_round(len(self.attacker_hit_distribution), len(self.defender_hit_distribution))
+        result = self._iterate_round(len(self.attacker_hit_distribution), len(self.defender_hit_distribution))
 
         return result
         
 
-    def self._hit_distribution(self, all_units_attacks):
+    def _hit_distribution(self, all_units_attacks):
 
         # flatten attacks to make the loop cleaner
         attacks = [x for y in all_units_attacks for x in y]
@@ -61,46 +63,47 @@ class calculator():
 
         return result
 
-    def self._iterate_round(self, c_fleet_a, c_fleet_d):
+    def _iterate_round(self, attacker_initial_units, defender_initial_units):
         # check if we hit a base case
         expected_result = np.zeros(3)
-        if a_r > 0 and d_r <= 0:
+        if attacker_initial_units > 0 and defender_initial_units <= 0:
             expected_result[0] = 1
             return expected_result
-        elif a_r <= 0 and d_r > 0:
+        elif attacker_initial_units <= 0 and defender_initial_units > 0:
             expected_result[2] = 1
             return expected_result
-        elif a_r <=0 and d_r <= 0:
+        elif attacker_initial_units <=0 and defender_initial_units <= 0:
             expected_result[1] = 1
             return expected_result
 
         misses = 0
 
-        for a_hits, a_p in a_hit_distribution[a_r].items():
-            for d_hits, d_p in d_hit_distribution[d_r].items():
+        for attacker_hits, attacker_hits_probability in self.attacker_hit_distribution[attacker_initial_units].items():
+            for defender_hits, defender_hits_probability in self.defender_hit_distribution[defender_initial_units].items():
                 # need to account for abilities, cards etc to calculate the new number of remaining ships
 
 
 
                 # need to adjust probabilities and skip recursion for case all ships miss
-                if a_hits == 0 and d_hits == 0:
-                    misses += a_p * d_p
+                if attacker_hits == 0 and defender_hits == 0:
+                    misses += attacker_hits_probability * defender_hits_probability
                     continue
 
-                a_n_r = a_r - d_hits
-                d_n_r = d_r - a_hits
+                # need new variable since 
+                attacker_ships_remaining = attacker_initial_units - defender_hits
+                defender_ships_remaining = defender_initial_units - attacker_hits
 
                 # NEW method
-                if (a_n_r, d_n_r) in precomputed_rounds:
-                    prior = precomputed_rounds[(a_n_r, d_n_r)]
+                if (attacker_ships_remaining, defender_ships_remaining) in self.precomputed_rounds:
+                    prior = self.precomputed_rounds[(attacker_ships_remaining, defender_ships_remaining)]
                 else:
-                    prior = iterate_round(a_n_r, d_n_r)
-                    precomputed_rounds[(a_n_r, d_n_r)] = prior
+                    prior = self._iterate_round(attacker_ships_remaining, defender_ships_remaining)
+                    self.precomputed_rounds[(attacker_ships_remaining, defender_ships_remaining)] = prior
 
                 # OLD method (for comparison only, its a lot slower but useful for testing)
-                #prior = iterate_round(a_n_r, d_n_r)
+                #prior = iterate_round(attacker_ships_remaining, defender_ships_remaining)
 
-                expected_result += prior * a_p * d_p
+                expected_result += prior * attacker_hits_probability * defender_hits_probability
 
         expected_result = expected_result / (1 - misses)
 
