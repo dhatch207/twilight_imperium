@@ -1,5 +1,3 @@
-import numpy as np
-
 class calculator():
     
     def __init__(self):
@@ -65,7 +63,7 @@ class calculator():
 
     def _iterate_round(self, attacker_initial_units, defender_initial_units):
         # check if we hit a base case
-        expected_result = np.zeros(3)
+        expected_result = [0, 0, 0]
         if attacker_initial_units > 0 and defender_initial_units <= 0:
             expected_result[0] = 1
             return expected_result
@@ -103,13 +101,11 @@ class calculator():
                 # OLD method (for comparison only, its a lot slower but useful for testing)
                 #prior = iterate_round(attacker_units_remaining, defender_units_remaining)
 
-                expected_result += prior * attacker_hits_probability * defender_hits_probability
+                expected_result = [expected_result[i] + prior[i] * attacker_hits_probability * defender_hits_probability for i in range(3)]
 
-        expected_result = expected_result / (1 - misses)
+        expected_result = [x / (1 - misses) for x in expected_result]
 
         return expected_result
-        
-        return
 
 c = calculator()
 c.add_attacker()
